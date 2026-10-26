@@ -1,9 +1,27 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ip:lc_ctrl_pkg:0.1"
 description: "LC Controller Package"
+vars:
+  tool_ascentlint:
+    datatype: bool
+    default: false
+    description: Set when linting with AscentLint, to add AscentLint waivers. Edalize has no flow API for AscentLint yet, so no CAPI=3 target sets it
+  tool_slang:
+    datatype: bool
+    default: false
+    description: Set when linting with slang, to add slang waivers. Edalize has no flow API for slang yet, so no CAPI=3 target sets it
+  tool_veriblelint:
+    datatype: bool
+    default: false
+    description: Set when linting with Verible, to add Verible lint rules and waivers. Edalize has no flow API for Verible lint yet, so no CAPI=3 target sets it
+  tool_verilator:
+    datatype: bool
+    default: false
+    description: Set by top-level targets that build with Verilator, to add Verilator waivers and checks
+
 filesets:
   files_rtl:
     depend:
@@ -51,22 +69,28 @@ parameters:
 
 
 targets:
-  default: &default_target
+  default:
     filesets:
-      - tool_verilator   ? (files_verilator_waiver)
-      - tool_ascentlint  ? (files_ascentlint_waiver)
-      - tool_veriblelint ? (files_veriblelint_waiver)
-      - tool_slang       ? (files_slang_waiver)
+      - if: "vars.tool_verilator"
+        add: [files_verilator_waiver]
+      - if: "vars.tool_ascentlint"
+        add: [files_ascentlint_waiver]
+      - if: "vars.tool_veriblelint"
+        add: [files_veriblelint_waiver]
+      - if: "vars.tool_slang"
+        add: [files_slang_waiver]
       - files_rtl
     toplevel: lc_ctrl
 
   lint:
-    <<: *default_target
-    default_tool: verilator
+    extends: default
+    vars: {tool_verilator: true}
+    flow: lint
+    flags: {tool: verilator}
     parameters:
       - SYNTHESIS=true
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"
+    flow_options:
+      tool: verilator
+      mode: lint-only
+      verilator_options:
+        - "-Wall"

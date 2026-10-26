@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -24,13 +24,20 @@ generate:
       spec: ../../data/pwrmgr.hjson
 
 targets:
-  default: &default_target
+  default:
     filesets:
       - files_dv
     generate:
       - csr_assert_gen
   formal:
-    <<: *default_target
+    extends: default
     filesets:
       - files_dv
     toplevel: pwrmgr
+    # CAPI=2 got the tool from dvsim's `--tool=icarus`
+    # (hw/formal/tools/dvsim/common_formal_cfg.hjson), which a CAPI=3 core does
+    # not take. Icarus only sets up the file list for the formal tool.
+    flow_options:
+      tool: icarus
+    flow: sim
+    flags: {tool: icarus}

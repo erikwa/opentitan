@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -55,13 +55,14 @@ parameters:
     paramtype: vlogdefine
 
 targets:
-  default: &default_target
+  default:
     filesets:
       - files_rtl_cw305
     toplevel: chip_englishbreakfast_cw305
 
   synth:
-    default_tool: vivado
+    flow: vivado
+    flags: { tool: vivado }
     filesets:
       - files_rtl_cw305
       - files_constraints
@@ -70,6 +71,5 @@ targets:
     parameters:
       - BootRomInitFile
       - AST_BYPASS_CLK=true
-    tools:
-      vivado:
-        part: "xc7a100tftg256-2" # CW305 Board
+    flow_options:
+      part: "xc7a100tftg256-2"   # CW305 Board

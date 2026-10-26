@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -25,23 +25,27 @@ parameters:
     paramtype: vlogdefine
 
 targets:
-  default: &default_target
+  default:
     filesets:
       - files_sim_verilator
     parameters:
       - AST_BYPASS_CLK=true
     toplevel: chip_darjeeling_verilator
-    tools:
-      verilator:
-        verilator_options:
+    # CAPI=2 had these under `tools: verilator:`, applied only when the top level ran Verilator.
+    # Flat `flow_options` reach every build, but only Verilator reads `verilator_options`.
+    flow_options:
+      verilator_options:
           # required to support OTP constants
-          - "--max-num-width 131072"
+        - "--max-num-width 131072"
 
   lint:
-    <<: *default_target
-    default_tool: verilator
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"
+    extends: default
+    vars: { tool_verilator: true }
+    flow: lint
+    flags: { tool: verilator }
+    flow_options:
+      tool: verilator
+      mode: lint-only
+      verilator_options:
+        - inherit: default
+        - "-Wall"

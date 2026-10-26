@@ -1,12 +1,18 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:top_darjeeling_chip_ral:0.1"
 description: "UVM register model for the chip"
 
+vars:
+  skip_ral_gen:
+    datatype: bool
+    default: false
+    description: Do not generate the chip RAL model
+
 virtual:
-    - lowrisc:dv:chip_ral
+  - lowrisc:dv:chip_ral
 
 filesets:
   ral_dep:
@@ -27,4 +33,5 @@ targets:
     filesets:
       - ral_dep
     generate:
-      - "!skip_ral_gen ? (ral)"
+      - if: "!vars.skip_ral_gen"
+        add: [ral]

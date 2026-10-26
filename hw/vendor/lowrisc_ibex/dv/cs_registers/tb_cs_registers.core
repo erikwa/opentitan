@@ -1,10 +1,16 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
 name: "lowrisc:ibex:tb_cs_registers"
 description: "CS registers testbench"
+vars:
+  tool_verilator:
+    datatype: bool
+    default: false
+    description: Set by top-level targets that build with Verilator, to add Verilator waivers and checks
+
 filesets:
   files_so:
     files:
@@ -87,11 +93,14 @@ parameters:
 
 targets:
   sim:
-    default_tool: verilator
+    vars: {tool_verilator: true}
+    flow: sim
+    flags: {tool: verilator}
     toplevel: tb_cs_registers
     filesets:
       - files_sim
-      - tool_verilator ? (files_verilator)
+      - if: "vars.tool_verilator"
+        add: [files_verilator]
     hooks:
       pre_build:
         - build_so
@@ -102,26 +111,27 @@ targets:
       - MHPMCounterNum
       - MHPMCounterWidth
 
-    tools:
-      vcs:
-        vcs_options:
-          - '-xlrm uniq_prior_final'
-          - 'src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
-          - '-debug_access+all'
-
-      verilator:
-        mode: cc
-        libs:
-          - 'src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
-        verilator_options:
+    flow_options:
+      tool: verilator
+      mode: cc
+      verilator_options:
           # Disabling tracing reduces compile times but doesn't have a
           # huge influence on runtime performance.
-          - '--trace'
-          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
-          - '--trace-structs'
-          - '--trace-params'
-          - '--trace-max-array 1024'
-          - '-CFLAGS "-std=c++17 -Wall -DTOPLEVEL_NAME=tb_cs_registers -DVM_TRACE_FMT_FST -g"'
-          - '-LDFLAGS "-pthread -lutil -lelf"'
-          - "-Wall"
-          - '-Wno-fatal' # Do not fail on (style) issues, only warn about them.
+        - '--trace'
+        - '--trace-fst'   # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+        - '--trace-structs'
+        - '--trace-params'
+        - '--trace-max-array 1024'
+        - '-CFLAGS "-std=c++17 -Wall -DTOPLEVEL_NAME=tb_cs_registers -DVM_TRACE_FMT_FST -g"'
+        - '-LDFLAGS "-pthread -lutil -lelf"'
+        - "-Wall"
+        - '-Wno-fatal'   # Do not fail on (style) issues, only warn about them.
+          # The flow API has no `libs`: Verilator links a library named on its command line.
+        - 'src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
+      # `vcs_options` were CAPI=2's `tools: vcs:`, used when this target ran with
+      # `--tool=vcs`. CAPI=3 has no `--tool`, so this Verilator build ignores them;
+      # a VCS build needs its own target.
+      vcs_options:
+        - '-xlrm uniq_prior_final'
+        - 'src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
+        - '-debug_access+all'

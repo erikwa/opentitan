@@ -1,9 +1,19 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:lint:comportable:0.1"
 description: "Waiver files for comportable IPs"
+vars:
+  tool_ascentlint:
+    datatype: bool
+    default: false
+    description: Set when linting with AscentLint, to add AscentLint waivers. Edalize has no flow API for AscentLint yet, so no CAPI=3 target sets it
+  tool_verilator:
+    datatype: bool
+    default: false
+    description: Set by top-level targets that build with Verilator, to add Verilator waivers and checks
+
 filesets:
   files_verilator_waiver:
     files:
@@ -16,7 +26,9 @@ filesets:
     file_type: waiver
 
 targets:
-  default: &default_target
+  default:
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
+      - if: "vars.tool_verilator"
+        add: [files_verilator_waiver]
+      - if: "vars.tool_ascentlint"
+        add: [files_ascentlint_waiver]

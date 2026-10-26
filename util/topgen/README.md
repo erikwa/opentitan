@@ -180,15 +180,15 @@ instruct the involved tools accordingly.
 
 ### Synthesis
 
-For synthesis, the `fileset_tapeout` flag has to be provided to  FuseSoC to use these tapeout files instead of the testing files.
+For synthesis, the `fileset_tapeout` variable has to be set in  FuseSoC to use these tapeout files instead of the testing files.
 
 Execute
 ```
-fusesoc --cores-root . run --target=syn --tool icarus --flag fileset_tapeout --no-export --setup lowrisc:systems:chip_earlgrey_asic
+fusesoc --cores-root . run --target=syn --var +fileset_tapeout --no-export --setup lowrisc:systems:chip_earlgrey_asic
 ```
 to prepare the filelist for synthesis.
 
-To check that the correct tapeout files are used, you can inspect the generated filelist inside `build/lowrisc_systems_chip_earlgrey_asic_0.1/syn-icarus/lowrisc_systems_chip_earlgrey_asic_0.1.scr`.
+To check that the correct tapeout files are used, you can inspect the generated filelist inside `build/lowrisc_systems_chip_earlgrey_asic_0.1/syn/lowrisc_systems_chip_earlgrey_asic_0.1.scr`.
 
 ### Chip-Level Tests
 
@@ -202,7 +202,7 @@ To run a chip-level test using these tapeout files, the following steps are requ
      // FuseSoC SystemVerilog filelist generation flags
      {
        name : sv_flist_gen_flags
-       value : ["--flag=fileset_tapeout"]
+       value : ["--var=+fileset_tapeout"]
      }
      ...
    ]

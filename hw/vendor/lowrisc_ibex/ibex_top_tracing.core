@@ -1,17 +1,25 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ibex:ibex_top_tracing:0.1"
 description: "Ibex, a small RV32 CPU core with tracing enabled"
+vars:
+  fileset_partner:
+    datatype: bool
+    default: false
+    description: Use the partner primitive library instead of the generic one
+
 filesets:
   files_rtl:
     depend:
       - lowrisc:ibex:ibex_top
       - lowrisc:ibex:ibex_tracer
       # Map the prims in ibex_top to prim_generic implementations for simulation and linting
-      - "fileset_partner ? (partner:prim_generic:all)"
-      - "!fileset_partner ? (lowrisc:prim_generic:all)"
+      - if: "vars.fileset_partner"
+        add: [partner:prim_generic:all]
+      - if: "!vars.fileset_partner"
+        add: [lowrisc:prim_generic:all]
     files:
       - rtl/ibex_top_tracing.sv
     file_type: systemVerilogSource
@@ -141,7 +149,7 @@ parameters:
     description: Bit width of performance monitor event counters [32/64]
 
 targets:
-  default: &default_target
+  default:
     filesets:
       - files_rtl
     parameters:
@@ -149,7 +157,7 @@ targets:
     toplevel: ibex_top_tracing
 
   lint:
-    <<: *default_target
+    extends: default
     parameters:
       - RVFI=true
       - SYNTHESIS=true
@@ -172,28 +180,32 @@ targets:
       - PMPNumRegions
       - MHPMCounterNum
       - MHPMCounterWidth
-    default_tool: verilator
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"
-          # RAM primitives wider than 64bit (required for ECC) fail to build in
-          # Verilator without increasing the unroll count (see Verilator#1266)
-          - "--unroll-count 72"
-  format:
-    filesets:
-      - files_rtl
-    parameters:
-      - SYNTHESIS=true
-      - RVFI=true
-    default_tool: veribleformat
-    toplevel: ibex_top_tracing
-    tools:
-      veribleformat:
-        verible_format_args:
-          - "--inplace"
-          - "--formal_parameters_indentation=indent"
-          - "--named_parameter_indentation=indent"
-          - "--named_port_indentation=indent"
-          - "--port_declarations_indentation=indent"
+    vars: {tool_verilator: true}
+    flow: lint
+    flags: {tool: verilator}
+    flow_options:
+      tool: verilator
+      mode: lint-only
+      verilator_options:
+        - "-Wall"
+        # RAM primitives wider than 64bit (required for ECC) fail to build in
+        # Verilator without increasing the unroll count (see Verilator#1266)
+        - "--unroll-count 72"
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `veribleformat`.
+  # format:
+  #   filesets:
+  #     - files_rtl
+  #   parameters:
+  #     - SYNTHESIS=true
+  #     - RVFI=true
+  #   default_tool: veribleformat
+  #   toplevel: ibex_top_tracing
+  #   tools:
+  #     veribleformat:
+  #       verible_format_args:
+  #         - "--inplace"
+  #         - "--formal_parameters_indentation=indent"
+  #         - "--named_parameter_indentation=indent"
+  #         - "--named_port_indentation=indent"
+  #         - "--port_declarations_indentation=indent"

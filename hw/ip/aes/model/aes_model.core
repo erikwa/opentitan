@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -18,9 +18,12 @@ targets:
     filesets:
       - files_dv
 
-    tools:
-      verilator:
-        mode: cc
-        verilator_options:
+    # CAPI=2 had these under `tools: verilator:`, applied only when the top level ran Verilator.
+    # Flat `flow_options` reach every build: only Verilator reads `verilator_options`,
+    # but `mode` reaches any tool or flow with a `mode` option unless the top level
+    # sets its own.
+    flow_options:
+      mode: cc
+      verilator_options:
 # linker flags
-          - '-LDFLAGS "-pthread -lcrypto"'
+        - '-LDFLAGS "-pthread -lcrypto"'

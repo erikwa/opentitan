@@ -1,10 +1,16 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
 name: "lowrisc:prim:gf_mult"
 description: "Galois multiplier"
+vars:
+  tool_ascentlint:
+    datatype: bool
+    default: false
+    description: Set when linting with AscentLint, to add AscentLint waivers. Edalize has no flow API for AscentLint yet, so no CAPI=3 target sets it
+
 filesets:
   files_rtl:
     depend:
@@ -25,5 +31,6 @@ filesets:
 targets:
   default:
     filesets:
-      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - if: "vars.tool_ascentlint"
+        add: [files_ascentlint_waiver]
       - files_rtl

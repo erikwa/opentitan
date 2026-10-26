@@ -1,9 +1,15 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ip:otbn_tracer"
 description: "Tracer for OTBN"
+
+vars:
+  tool_verilator:
+    datatype: bool
+    default: false
+    description: Set by top-level targets that build with Verilator, to add Verilator waivers and checks
 
 filesets:
   files_tracer:
@@ -26,4 +32,5 @@ targets:
   default:
     filesets:
       - files_tracer
-      - tool_verilator ? (files_verilator_waiver)
+      - if: "vars.tool_verilator"
+        add: [files_verilator_waiver]

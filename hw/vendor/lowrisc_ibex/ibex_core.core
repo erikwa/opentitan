@@ -1,9 +1,15 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ibex:ibex_core:0.1"
 description: "Ibex CPU Core Components"
+
+vars:
+  tool_verilator:
+    datatype: bool
+    default: false
+    description: Set by top-level targets that build with Verilator, to add Verilator waivers and checks
 
 filesets:
   files_rtl:
@@ -170,37 +176,43 @@ parameters:
     description: Bit width of performance monitor event counters [32/64]
 
 targets:
-  default: &default_target
+  default:
     filesets:
-      - tool_verilator ? (files_lint_verilator)
+      - if: "vars.tool_verilator"
+        add: [files_lint_verilator]
       - files_rtl
       - files_check_tool_requirements
     toplevel: ibex_core
     parameters:
-      - tool_vivado ? (FPGA_XILINX=true)
+      - if: "flow == 'vivado'"
+        add: [FPGA_XILINX=true]
   lint:
-    <<: *default_target
+    extends: default
     parameters:
       - SYNTHESIS=true
       - RVFI=true
-    default_tool: verilator
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"
-          # RAM primitives wider than 64bit (required for ECC) fail to build in
-          # Verilator without increasing the unroll count (see Verilator#1266)
-          - "--unroll-count 72"
-  format:
-    filesets:
-      - files_rtl
-    parameters:
-      - SYNTHESIS=true
-      - RVFI=true
-    default_tool: veribleformat
-    toplevel: ibex_core
-    tools:
-      veribleformat:
-        verible_format_args:
-          - "--inplace"
+    vars: {tool_verilator: true}
+    flow: lint
+    flags: {tool: verilator}
+    flow_options:
+      tool: verilator
+      mode: lint-only
+      verilator_options:
+        - "-Wall"
+        # RAM primitives wider than 64bit (required for ECC) fail to build in
+        # Verilator without increasing the unroll count (see Verilator#1266)
+        - "--unroll-count 72"
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `veribleformat`.
+  # format:
+  #   filesets:
+  #     - files_rtl
+  #   parameters:
+  #     - SYNTHESIS=true
+  #     - RVFI=true
+  #   default_tool: veribleformat
+  #   toplevel: ibex_core
+  #   tools:
+  #     veribleformat:
+  #       verible_format_args:
+  #         - "--inplace"

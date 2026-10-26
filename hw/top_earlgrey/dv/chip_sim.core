@@ -1,16 +1,28 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:top_earlgrey_chip_sim:0.1"
 description: "Earlgrey chip DV sim target"
 
+vars:
+  gatelevel:
+    datatype: bool
+    default: false
+    description: Simulate the gate-level netlist instead of the RTL top level
+  tool_veriblelint:
+    datatype: bool
+    default: false
+    description: Set when linting with Verible, to add Verible lint rules and waivers. Edalize has no flow API for Verible lint yet, so no CAPI=3 target sets it
+
 filesets:
   files_rtl:
     depend:
-      - "!gatelevel ? (lowrisc:systems:top_earlgrey)"
+      - if: "!vars.gatelevel"
+        add: [lowrisc:systems:top_earlgrey]
       - lowrisc:systems:top_earlgrey_pkg
-      - "!gatelevel ? (lowrisc:systems:chip_earlgrey_asic)"
+      - if: "!vars.gatelevel"
+        add: [lowrisc:systems:chip_earlgrey_asic]
       - lowrisc:ibex:ibex_tracer
     file_type: systemVerilogSource
 
@@ -58,18 +70,28 @@ filesets:
     file_type: veribleLintWaiver
 
 targets:
-  default: &default_target
+  default:
     toplevel: tb
     filesets:
-      - tool_veriblelint ? (files_veriblelint_waiver)
+      - if: "vars.tool_veriblelint"
+        add: [files_veriblelint_waiver]
       - files_rtl
       - files_dv
+    vars:
+      chip_level: true
     flags:
       chip_level: true
 
   sim:
-    <<: *default_target
-    default_tool: vcs
+    extends: default
+    flow_options:
+      tool: vcs
+    flow: sim
+    flags: {tool: vcs}
 
-  lint:
-    <<: *default_target
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `veriblelint`. CAPI=2 ran this target
+  # with dvsim's `--tool={tool}` (hw/lint/tools/dvsim/common_lint_cfg.hjson),
+  # and OpenTitan's CI lints with Verible.
+  # lint:
+  #   extends: default

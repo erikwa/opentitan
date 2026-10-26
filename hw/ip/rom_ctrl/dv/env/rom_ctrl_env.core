@@ -1,9 +1,15 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:rom_ctrl_env:0.1"
 description: "ROM_CTRL DV UVM environment"
+vars:
+  chip_level:
+    datatype: bool
+    default: false
+    description: Build as part of the chip-level testbench, which provides the RAL model
+
 filesets:
   files_rtl:
     depend:
@@ -16,7 +22,8 @@ filesets:
       - lowrisc:dv:kmac_app_agent
       - lowrisc:dv:reset_agent
       - lowrisc:dv:rom_ctrl_ifs
-      - "chip_level ? (lowrisc:dv:chip_ral)"
+      - if: "vars.chip_level"
+        add: [lowrisc:dv:chip_ral]
     files:
       - rom_ctrl_prim_ral_pkg.sv
       - rom_ctrl_env_pkg.sv
@@ -48,4 +55,5 @@ targets:
       - files_rtl
       - files_dv
     generate:
-      - "!chip_level ? (ral)"
+      - if: "!vars.chip_level"
+        add: [ral]

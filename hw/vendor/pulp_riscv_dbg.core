@@ -1,9 +1,15 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "pulp-platform:riscv-dbg:0.1"
 description: "RISC-V Debug Module"
+
+vars:
+  tool_verilator:
+    datatype: bool
+    default: false
+    description: Set by top-level targets that build with Verilator, to add Verilator waivers and checks
 
 filesets:
   files_src:
@@ -31,5 +37,6 @@ filesets:
 targets:
   default:
     filesets:
-      - tool_verilator ? (files_verilator_waiver)
+      - if: "vars.tool_verilator"
+        add: [files_verilator_waiver]
       - files_src

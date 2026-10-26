@@ -1,9 +1,15 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ibex:ibex_riscv_compliance:0.1"
 description: "Ibex simulation for RISC-V compliance testing (using Verilator)"
+vars:
+  tool_verilator:
+    datatype: bool
+    default: false
+    description: Set by top-level targets that build with Verilator, to add Verilator waivers and checks
+
 filesets:
   files_sim:
     depend:
@@ -139,10 +145,13 @@ parameters:
 
 targets:
   sim:
-    default_tool: verilator
+    vars: {tool_verilator: true}
+    flow: sim
+    flags: {tool: verilator}
     filesets:
       - files_sim
-      - tool_verilator ? (files_verilator)
+      - if: "vars.tool_verilator"
+        add: [files_verilator]
     parameters:
       - BaseIsa
       - RV32E
@@ -164,17 +173,17 @@ targets:
       - MHPMCounterNum
       - MHPMCounterWidth
     toplevel: ibex_riscv_compliance
-    tools:
-      verilator:
-        mode: cc
-        verilator_options:
+    flow_options:
+      tool: verilator
+      mode: cc
+      verilator_options:
           # Disabling tracing reduces compile times but doesn't have a
           # huge influence on runtime performance.
-          - '--trace'
-          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
-          - '--trace-structs'
-          - '--trace-params'
-          - '--trace-max-array 1024'
-          - '-CFLAGS "-std=c++17 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_riscv_compliance -g"'
-          - '-LDFLAGS "-pthread -lutil -lelf"'
-          - "-Wall"
+        - '--trace'
+        - '--trace-fst'   # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+        - '--trace-structs'
+        - '--trace-params'
+        - '--trace-max-array 1024'
+        - '-CFLAGS "-std=c++17 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_riscv_compliance -g"'
+        - '-LDFLAGS "-pthread -lutil -lelf"'
+        - "-Wall"

@@ -1,9 +1,15 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:ip:rram_macro:0.1
 description: "Open-source RRAM macro for emulation purposes"
+vars:
+  tool_ascentlint:
+    datatype: bool
+    default: false
+    description: Set when linting with AscentLint, to add AscentLint waivers. Edalize has no flow API for AscentLint yet, so no CAPI=3 target sets it
+
 virtual:
   - lowrisc:virtual_ip:rram_macro
 
@@ -37,6 +43,7 @@ mapping:
 targets:
   default:
     filesets:
-      - tool_ascentlint ? (files_ascentlint_waiver)
+      - if: "vars.tool_ascentlint"
+        add: [files_ascentlint_waiver]
       - files_rtl
     toplevel: rram_macro

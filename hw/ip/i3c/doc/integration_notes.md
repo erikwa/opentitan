@@ -89,7 +89,7 @@ The Target Reset Detector in the secondary partition observes the bus through tw
 
 Internally, the Controller and the Target present their driver outputs using SystemVerilog compound types from the package `i3c_io_pkg`, allowing the set of signals to be modified with reduced impact upon the RTL design.
 Two implementations of this package are available, and only _one_ of them shall be included in the build.
-FuseSoC selects the Virtual Open Drain style by default, and the Separated Enables style when the flag `i3c_io_sep_drv_en` is set.
+FuseSoC selects the Virtual Open Drain style by default, and the Separated Enables style when the variable `i3c_io_sep_drv_en` is set (`--var +i3c_io_sep_drv_en`).
 
 ### Separated Enables (`rtl/io_sep/i3c_io_pkg.sv`)
 

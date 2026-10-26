@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -59,9 +59,12 @@ parameters:
   AST_BYPASS_CLK:
     datatype: bool
     paramtype: vlogdefine
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
 
 targets:
-  default: &default_target
+  default:
     filesets:
       - files_rtl_cw340
       - files_ascentlint_waiver
@@ -70,7 +73,8 @@ targets:
       - AST_BYPASS_CLK=true
 
   synth:
-    default_tool: vivado
+    flow: vivado
+    flags: { tool: vivado }
     filesets:
       - files_rtl_cw340
       - files_constraints
@@ -79,18 +83,19 @@ targets:
     parameters:
       - BootRomInitFile
       - AST_BYPASS_CLK=true
-    tools:
-      vivado:
-        part: "xcku095-ffva1156-1-c" # CW341 with KU095
+    flow_options:
+      part: "xcku095-ffva1156-1-c"   # CW341 with KU095
 
   lint:
-    <<: *default_target
-    default_tool: verilator
+    extends: default
+    vars: { tool_verilator: true }
+    flow: lint
+    flags: { tool: verilator }
     parameters:
       - SYNTHESIS=true
       - AST_BYPASS_CLK=true
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"
+    flow_options:
+      tool: verilator
+      mode: lint-only
+      verilator_options:
+        - "-Wall"

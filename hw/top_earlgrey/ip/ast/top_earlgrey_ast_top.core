@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -24,11 +24,13 @@ targets:
     toplevel: ast
     filesets:
       - files_rtl
-    default_tool: verilator
+    vars: {tool_verilator: true}
+    flow: lint
+    flags: {tool: verilator}
     parameters:
       - SYNTHESIS=true
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"
+    flow_options:
+      tool: verilator
+      mode: lint-only
+      verilator_options:
+        - "-Wall"

@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -15,8 +15,12 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default: &default_target
+  default:
     filesets:
       - files_rtl
     toplevel: ibex_icache
-    default_tool: vcs
+    flow_options:
+      tool: vcs
+    # FUSESOC-MIGRATE: `vcs` is a flow-API tool of Edalize with no flow of its name, so it runs under `sim`, and the core file does not say whether this target simulates or lints. Keep `flow: sim` to simulate, or write `flow: lint` (specification §7.5)
+    flow: sim
+    flags: {tool: vcs}

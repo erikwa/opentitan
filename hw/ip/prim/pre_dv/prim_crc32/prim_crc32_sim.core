@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -17,45 +17,51 @@ filesets:
       - prim_crc32_sim.sv: { file_type: systemVerilogSource }
 
 targets:
-  default: &default_target
+  default:
     filesets:
       - files_crc32
       - files_verilator
     toplevel: prim_crc32_sim
 
   lint:
-    <<: *default_target
-    default_tool: verilator
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"
+    extends: default
+    vars: { tool_verilator: true }
+    flow: lint
+    flags: { tool: verilator }
+    flow_options:
+      tool: verilator
+      mode: lint-only
+      verilator_options:
+        - "-Wall"
           # RAM primitives wider than 64bit (required for ECC) fail to build in
           # Verilator without increasing the unroll count (see Verilator#1266)
-          - "--unroll-count 72"
+        - "--unroll-count 72"
 
   sim:
-    <<: *default_target
-    default_tool: verilator
-    tools:
-      vcs:
-        vcs_options:
-          - '-xlrm uniq_prior_final'
-          - '-debug_access+r'
-      verilator:
-        mode: cc
-        verilator_options:
+    extends: default
+    vars: { tool_verilator: true }
+    flow: sim
+    flags: { tool: verilator }
+    flow_options:
+      tool: verilator
+      mode: cc
+      verilator_options:
           # Disabling tracing reduces compile times but doesn't have a
           # huge influence on runtime performance.
-          - '--trace'
-          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
-          - '--trace-structs'
-          - '--trace-params'
-          - '--trace-max-array 1024'
-          - '-CFLAGS "-std=c++17 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=prim_crc32_sim"'
-          - '-LDFLAGS "-pthread -lutil -lelf"'
-          - "-Wall"
+        - '--trace'
+        - '--trace-fst'   # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+        - '--trace-structs'
+        - '--trace-params'
+        - '--trace-max-array 1024'
+        - '-CFLAGS "-std=c++17 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=prim_crc32_sim"'
+        - '-LDFLAGS "-pthread -lutil -lelf"'
+        - "-Wall"
           # RAM primitives wider than 64bit (required for ECC) fail to build in
           # Verilator without increasing the unroll count (see Verilator#1266)
-          - "--unroll-count 72"
+        - "--unroll-count 72"
+      # `vcs_options` were CAPI=2's `tools: vcs:`, used when this target ran with
+      # `--tool=vcs`. CAPI=3 has no `--tool`, so this Verilator build ignores them;
+      # a VCS build needs its own target.
+      vcs_options:
+        - '-xlrm uniq_prior_final'
+        - '-debug_access+r'

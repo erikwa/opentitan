@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -23,12 +23,15 @@ parameters:
     paramtype: vlogdefine
 
 targets:
-  default: &default_target
+  default:
     filesets:
       - files_rtl
   syn:
-    <<: *default_target
-    default_tool: icarus
+    extends: default
+    flow_options:
+      tool: icarus
+    flow: sim
+    flags: {tool: icarus}
     parameters:
       - SYNTHESIS=true
     toplevel: prim_sdc_example

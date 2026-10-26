@@ -1,14 +1,21 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:racl_ctrl_base_env:0.1"
 description: "RACL_CTRL DV UVM environment"
+vars:
+  chip_level:
+    datatype: bool
+    default: false
+    description: Build as part of the chip-level testbench, which provides the RAL model
+
 filesets:
   files_dv:
     depend:
       - lowrisc:dv:cip_lib
-      - "!chip_level ? (lowrisc:dv:racl_ctrl_ral)"
+      - if: "!vars.chip_level"
+        add: [lowrisc:dv:racl_ctrl_ral]
       - lowrisc:dv:racl_error_log_agent
     files:
       - racl_ctrl_policies_if.sv

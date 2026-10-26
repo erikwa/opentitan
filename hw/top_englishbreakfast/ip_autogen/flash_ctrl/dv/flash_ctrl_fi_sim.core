@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -34,7 +34,7 @@ filesets:
     file_type: standardFaultFormat
 
 targets:
-  default: &default_target
+  default:
     toplevel: tb
     filesets:
       - files_rtl
@@ -43,5 +43,8 @@ targets:
       - files_fi_sff
 
   sim:
-    <<: *default_target
-    default_tool: vcs
+    extends: default
+    flow_options:
+      tool: vcs
+    flow: sim
+    flags: {tool: vcs}

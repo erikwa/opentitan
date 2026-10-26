@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -51,13 +51,13 @@ parameters:
     paramtype: vlogdefine
     description: Verilator specific address to write to, to report the test status. This value should be at a word offset in the unmapped address space.
   flashinit:
-    datatype : file
-    description : Application to load into Flash (in Verilog hex format)
-    paramtype : cmdlinearg
+    datatype: file
+    description: Application to load into Flash (in Verilog hex format)
+    paramtype: cmdlinearg
   rominit:
-    datatype : file
-    description : Application to load into Boot ROM (in Verilog hex format)
-    paramtype : cmdlinearg
+    datatype: file
+    description: Application to load into Boot ROM (in Verilog hex format)
+    paramtype: cmdlinearg
   DMIDirectTAP:
     datatype: bool
     paramtype: vlogdefine
@@ -73,7 +73,7 @@ parameters:
     description: Disconnect the TL data output of rv_core_ibex so that we can attach the simulation SRAM.
 
 targets:
-  default: &default_target
+  default:
     filesets:
       - files_dv
     toplevel: chip_sim_tb
@@ -87,35 +87,37 @@ targets:
       - rominit
       - DMIDirectTAP
       - RV_CORE_IBEX_SIM_SRAM=true
-    default_tool: verilator
+    vars: { tool_verilator: true }
+    flow: sim
+    flags: { tool: verilator }
     filesets:
       - files_dv
     toplevel: chip_sim_tb
-    tools:
-      verilator:
-        mode: cc
-        verilator_options:
+    flow_options:
+      tool: verilator
+      mode: cc
+      verilator_options:
           # Disabling tracing reduces compile times but doesn't have a
           # huge influence on runtime performance.
-          - '--trace'
-          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+        - '--trace'
+        - '--trace-fst'   # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
           # Remove FST options for VCD trace
-          - '--trace-structs'
-          - '--trace-params'
-          - '--trace-max-array 1024'
-          - '--unroll-count 512'
-          - '-CFLAGS "-std=c++17 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=chip_sim_tb"'
-          - '-LDFLAGS "-pthread -lutil -lelf"'
-          - '-Wall'
+        - '--trace-structs'
+        - '--trace-params'
+        - '--trace-max-array 1024'
+        - '--unroll-count 512'
+        - '-CFLAGS "-std=c++17 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=chip_sim_tb"'
+        - '-LDFLAGS "-pthread -lutil -lelf"'
+        - '-Wall'
           # Execute simulation with four threads by default, which works best
           # with four physical CPU cores.
           # Users can override this setting by appending e.g.
           # --verilator_options '--threads 2'
           # to the end of the fusesoc invocation when compiling the simulation.
-          - '--threads 4'
+        - '--threads 4'
           # XXX: Cleanup all warnings and remove this option
           # (or make it more fine-grained at least)
-          - '-Wno-fatal'
+        - '-Wno-fatal'
           # The behavioral models of the AST power good detectors (`vio_pgd`
           # and `vcc_pgd`) drive their outputs through delays.  Verilator 5
           # refuses to compile a design with delays unless told what to do
@@ -125,15 +127,17 @@ targets:
           # today.  Those two models are waived in `ip/ast/lint/ast.vlt`;
           # `-Werror-` turns a delay anywhere else into an error, which
           # `-Wno-fatal` above would otherwise demote to a report.
-          - '--no-timing'
-          - '-Werror-STMTDLY'
-          - '-Werror-ASSIGNDLY'
+        - '--no-timing'
+        - '-Werror-STMTDLY'
+        - '-Werror-ASSIGNDLY'
 
   lint:
-    <<: *default_target
-    default_tool: verilator
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"
+    extends: default
+    vars: { tool_verilator: true }
+    flow: lint
+    flags: { tool: verilator }
+    flow_options:
+      tool: verilator
+      mode: lint-only
+      verilator_options:
+        - "-Wall"
