@@ -1,9 +1,15 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_env:0.1")}
 description: "${module_instance_name.upper()} DV UVM environment"
+vars:
+  chip_level:
+    datatype: bool
+    default: false
+    description: Build as part of the chip-level testbench, which provides the RAL model
+
 filesets:
   files_dv:
     depend:
@@ -43,4 +49,5 @@ targets:
     filesets:
       - files_dv
     generate:
-      - "!chip_level ? (ral)"
+      - if: "!vars.chip_level"
+        add: [ral]

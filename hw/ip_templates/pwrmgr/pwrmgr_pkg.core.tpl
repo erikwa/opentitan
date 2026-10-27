@@ -1,9 +1,15 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:pwrmgr_pkg:0.1")}
 description: "Power manager package"
+
+vars:
+  tool_verilator:
+    datatype: bool
+    default: false
+    description: Set by top-level targets that build with Verilator, to add Verilator waivers and checks
 
 filesets:
   files_rtl:
@@ -30,5 +36,6 @@ filesets:
 targets:
   default:
     filesets:
-      - tool_verilator   ? (files_verilator_waiver)
+      - if: "vars.tool_verilator"
+        add: [files_verilator_waiver]
       - files_rtl

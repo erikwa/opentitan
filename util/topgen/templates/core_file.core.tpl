@@ -1,10 +1,18 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
 name: "${package}"
 description: "${description}"
+% if files_veriblelint_waiver is not UNDEFINED:
+vars:
+  tool_veriblelint:
+    datatype: bool
+    default: false
+    description: Set when linting with Verible, to add Verible lint rules and waivers. Edalize has no flow API for Verible lint yet, so no CAPI=3 target sets it
+
+% endif
 % if virtual_package is not UNDEFINED:
 virtual:
   - ${virtual_package}
@@ -39,5 +47,6 @@ targets:
     filesets:
       - files_rtl
     % if files_veriblelint_waiver is not UNDEFINED:
-      - tool_veriblelint ? (files_veriblelint_waiver)
+      - if: "vars.tool_veriblelint"
+        add: [files_veriblelint_waiver]
     % endif

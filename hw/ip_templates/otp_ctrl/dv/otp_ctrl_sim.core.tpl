@@ -1,4 +1,4 @@
-CAPI=2:
+CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -23,15 +23,22 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default: &default_target
+  default:
     toplevel: tb
     filesets:
       - files_rtl
       - files_dv
 
   sim:
-    <<: *default_target
-    default_tool: vcs
+    extends: default
+    flow_options:
+      tool: vcs
+    flow: sim
+    flags: {tool: vcs}
 
-  lint:
-    <<: *default_target
+  # Not converted: CAPI=3 has only the flow API, and Edalize 0.6.8
+  # has no flow-API implementation of `veriblelint`. CAPI=2 ran this target
+  # with dvsim's `--tool={tool}` (hw/lint/tools/dvsim/common_lint_cfg.hjson),
+  # and OpenTitan's CI lints with Verible.
+  # lint:
+  #   extends: default

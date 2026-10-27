@@ -1063,7 +1063,7 @@ endmodule : {}_bind_fpv
         f.write(outstr)
 
     with open(outdir + "/" + module_name + "_fpv.core", "w") as f:
-        outstr = '''CAPI=2:
+        outstr = '''CAPI=3:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -1081,20 +1081,29 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default: &default_target
+  default:
     # note, this setting is just used
     # to generate a file list for jg
-    default_tool: icarus
+    flow_options:
+      tool: icarus
+    # FUSESOC-MIGRATE: `icarus` is a flow-API tool of Edalize with no flow of its name, so it runs under `sim`, and the core file does not say whether this target simulates or lints. Keep `flow: sim` to simulate, or write `flow: lint` (specification §7.5)
+    flow: sim
+    flags: {{tool: icarus}}
     filesets:
       - files_formal
     toplevel:
       - {}_tb
 
   formal:
-    <<: *default_target
+    extends: default
 
+  # CAPI=2 ran this target with dvsim's `--tool={{tool}}`
+  # (hw/lint/tools/dvsim/common_lint_cfg.hjson), which overrode the `icarus` it inherits.
+  # OpenTitan's CI lints with Verible. A CAPI=3 core does not take `--tool`, and
+  # Edalize has no flow API for Verible yet, so this target runs the `sim` flow
+  # with icarus, not a lint.
   lint:
-    <<: *default_target
+    extends: default
 '''.format(module_name, module_name, module_name, module_name, module_name)
         f.write(outstr)
 
