@@ -66,6 +66,25 @@ restore once Edalize has one:
   `fileset_tapeout` are `--var +fileset_tapeout` on the command line. Ibex's
   `FPGA_XILINX`, which CAPI=2 set on `tool_vivado`, is set on `flow == 'vivado'`.
 
+## Core templates
+
+Generated cores are converted where they are generated, so regenerating a top keeps
+them CAPI=3:
+
+- **Converted, checked by regeneration:** the ipgen templates (`hw/ip_templates/*`),
+  the tlgen and topgen core templates, the `prim_mubi` templates and the FPV cores
+  `util/design/secded_gen.py` writes. `topgen.py` for the three tops, `gen-mubi.py`
+  and `secded_gen.py` reproduce all 240 generated cores byte for byte.
+- **Converted, checked by rendering:** the `pwm` templates, which no top
+  instantiates. Rendered with the template defaults, they load and `lint` sets up.
+- **Left on CAPI=2, scaffolding:** `util/uvmdvgen/*.core.tpl` and
+  `util/fpvgen/fusesoc.core.tpl` generate new IPs and have no output in the tree to
+  check against.
+- **Left on CAPI=2, generator output:** `util/reggen/gen_dv.py`,
+  `util/reggen/gen_fpv.py` and `util/topgen/gen_dv.py` write cores from FuseSoC
+  generators (ralgen, csr_assert_gen) at build time, and FuseSoC accepts only CAPI=2
+  from a generator.
+
 ## Running it
 
 From the OpenTitan root, in a scratch copy without the two `files: []` lines:
